@@ -16,6 +16,7 @@
 
 <script>
 import Axios from 'axios';
+import { mapMutations } from 'vuex';
 
 export default {
   name: 'login',
@@ -26,6 +27,7 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(['resiveLogin']),
     logVerify() {
       Axios({
         method: 'post',
@@ -36,7 +38,16 @@ export default {
         }
       })
         .then(res => {
-          console.log(res.data);
+          // localStorage.setItem(
+          //   'loginData',
+          //   JSON.stringify({
+          //     username: this.account,
+          //     password: this.pwd
+          //   })
+          // );
+          sessionStorage.setItem('login', JSON.stringify(res.data.user));
+          this.resiveLogin(res.data.user);
+          this.$router.push('/home');
         })
         .catch(e => {
           console.log('登陆失败', e);
