@@ -56,7 +56,7 @@ export default {
           // );
           sessionStorage.setItem('login', JSON.stringify(res.data.user));
           this.resiveLogin(res.data.user);
-          this.$router.push('/home');
+          this.$router.push('/index');
         })
         .catch(e => {
           console.log('登陆失败', e);

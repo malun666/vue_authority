@@ -34,16 +34,16 @@
           :style="{ background: '#5b6270' }"
           v-model="isCollapsed"
         >
-          <Menu active-name="1-2" theme="dark" width="auto" :open-names="['1']">
+          <Menu active-name="1-1" theme="dark" width="auto" :open-names="['1']">
             <Submenu name="1">
               <template slot="title">
                 <Icon type="ios-navigate" size="22"></Icon>
                 Item 1
               </template>
-              <MenuItem name="1-1">
+              <MenuItem name="1-1" to="/index/Usermanage">
                 <Icon type="ios-body" size="20" />用户管理</MenuItem
               >
-              <MenuItem name="1-2"
+              <MenuItem name="1-2" to="/index/Rolemanage"
                 ><Icon type="md-contact" size="20" />角色管理</MenuItem
               >
               <MenuItem name="1-3"
@@ -66,22 +66,22 @@
 
         <!-- 右侧  -->
         <Layout :style="{ padding: '0 24px 24px' }">
-          <Breadcrumb :style="{ margin: '24px 0' }">
-            <!-- <BreadcrumbItem>Home123</BreadcrumbItem>
+          <!-- <Breadcrumb :style="{ margin: '24px 0' }"> -->
+          <!-- <BreadcrumbItem>Home123</BreadcrumbItem>
             <BreadcrumbItem>Components</BreadcrumbItem>
             <BreadcrumbItem>Layout</BreadcrumbItem> -->
-            <Button type="info">添 加</Button>
+          <!-- <Button type="info">添 加</Button>
             <Button type="success">修 改</Button>
             <Button type="warning">删 除</Button>
             <Button :size="buttonSize" type="primary">
               <Icon type="ios-arrow-back" />
               Backward
             </Button>
-          </Breadcrumb>
+          </Breadcrumb> -->
           <Content
             :style="{ padding: '24px', minHeight: '280px', background: '#fff' }"
           >
-            Content
+            <router-view />
           </Content>
         </Layout>
       </Layout>

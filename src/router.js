@@ -4,6 +4,8 @@ import Router from 'vue-router';
 import Login from './views/Login.vue';
 import Home from './views/Home.vue';
 import Index from './views/lndex.vue';
+import Usermanage from './views/manage/Usermanage.vue';
+import Rolemanage from './views/manage/Rolemanage.vue';
 
 Vue.use(Router);
 
@@ -22,7 +24,18 @@ export default new Router({
     {
       path: '/index',
       name: 'index',
-      component: Index
+      component: Index,
+      redirect: '/index/Usermanage',
+      children: [
+        {
+          path: 'Usermanage',
+          component: Usermanage
+        },
+        {
+          path: 'Rolemanage',
+          component: Rolemanage
+        }
+      ]
     },
     {
       path: '/about',
