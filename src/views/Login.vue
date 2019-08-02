@@ -7,7 +7,16 @@
       </div>
       <div class="password">
         <label for="pwd">密码</label>
-        <input type="password" id="pwd" v-model="pwd" @keydown="enterLog" />
+        <input type="password" id="pwd" v-model="pwd" />
+      </div>
+      <div class="verify">
+        <input type="text" class="veri-input" @keydown="enterLog" />
+        <img
+          src="http://192.168.1.130:8888/api/code"
+          alt="验证码"
+          @click="changeImg"
+          ref="veriImg"
+        />
       </div>
       <div class="tologin" @click="logVerify">登录</div>
     </div>
@@ -57,6 +66,11 @@ export default {
       if (e.keyCode == 13) {
         this.logVerify();
       }
+    },
+    changeImg() {
+      // console.log(this.$refs.veriImg.src);
+      let newSrc = 'http://192.168.1.130:8888/api/code' + '?ab=' + Date.now();
+      this.$refs.veriImg.src = newSrc;
     }
   }
 };
@@ -76,8 +90,10 @@ export default {
   box-sizing: border-box;
   .account,
   .password {
-    margin-left: 50px;
-    margin-bottom: 20px;
+    width: 220px;
+    margin: 0 auto 15px;
+    // margin-left: 50px;
+    // margin-bottom: 20px;
     input {
       margin-left: 10px;
     }
@@ -90,6 +106,22 @@ export default {
     line-height: 50px;
     text-align: center;
     margin: 0 auto;
+  }
+  .verify {
+    width: 220px;
+    margin: 0 auto 15px;
+    height: 30px;
+    box-sizing: border-box;
+    input {
+      width: 100px;
+      height: 25px;
+      text-align: right;
+    }
+    img {
+      width: 75px;
+      height: 25px;
+      margin-left: 10px;
+    }
   }
 }
 </style>
