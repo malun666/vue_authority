@@ -1,38 +1,9 @@
-<style scoped>
-.layout {
-  border: 1px solid #d7dde4;
-  background: #f9f7f5;
-  position: relative;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.layout-logo {
-  width: 100px;
-  height: 30px;
-  line-height: 30px;
-  color: #fff;
-  text-align: center;
-  background: #5b6270;
-  border-radius: 3px;
-  float: left;
-  position: relative;
-  top: 15px;
-  left: 20px;
-}
-.layout-nav {
-  width: 420px;
-  margin: 0 auto;
-  margin-right: 20px;
-}
-</style>
 <template>
   <div class="layout">
-    <Layout>
+    <Layout style="height:100%">
       <Header>
         <Menu mode="horizontal" theme="dark" active-name="1">
-          <div class="layout-logo">
-            aicoder
-          </div>
+          <div class="layout-logo">管理平台</div>
           <div class="layout-nav">
             <MenuItem name="1">
               <Icon type="ios-navigate"></Icon>
@@ -95,7 +66,7 @@
             <BreadcrumbItem>Layout</BreadcrumbItem>
           </Breadcrumb>
           <Content
-            :style="{ padding: '24px', minHeight: '480px', background: '#fff' }"
+            :style="{ padding: '24px', minHeight: '280px', background: '#fff' }"
           >
             Content
           </Content>
@@ -107,3 +78,31 @@
 <script>
 export default {};
 </script>
+<style scoped>
+.layout {
+  border: 1px solid #d7dde4;
+  background: #f5f7f9;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 100%;
+}
+.layout-logo {
+  padding: 0 10px;
+  height: 30px;
+  color: #fff;
+  font-weight: 600;
+  line-height: 30px;
+  background: #5b6270;
+  border-radius: 3px;
+  float: left;
+  position: relative;
+  top: 15px;
+  left: 20px;
+}
+.layout-nav {
+  width: 430px;
+  margin: 0 auto;
+  margin-right: 20px;
+}
+</style>
