@@ -11,7 +11,7 @@
     >
       <span slot="prepend">搜索</span>
     </Input>
-    <Table stripe border highlight-row :columns="columns1" :data="userArr">
+    <Table stripe border highlight-row :columns="columns1" :data="pageArr">
       <template slot-scope="{ row, index }" slot="id">
         <Input v-if="editIndex == index" type="text" v-model="editId" />
         <span v-else>{{ row.id }}</span>
@@ -56,6 +56,14 @@
         </template>
       </template>
     </Table>
+    <Page
+      style="margin-top: 15px"
+      :total="userArr.length"
+      :page-size="pageSize"
+      show-elevator
+      :current="pageNum"
+      @on-change="changePage"
+    />
     <Drawer
       title="添加用户"
       :closable="true"
@@ -164,6 +172,7 @@ export default {
         }
       ],
       userArr: [],
+      pageArr: [],
       editId: '',
       editName: '',
       editSchool: '',
@@ -176,7 +185,9 @@ export default {
       addSchool: '',
       addPhone: '',
       addMail: '',
-      searchCont: ''
+      searchCont: '',
+      pageSize: 3,
+      pageNum: 1
     };
   },
   methods: {
@@ -241,6 +252,20 @@ export default {
         .catch(() => {
           console.log('删除失败！');
         });
+      axios('/api/user', {
+        headers: {
+          Authorization: 'aa'
+        }
+      })
+        .then(res => {
+          this.userArr = res.data;
+          let startNum = (this.pageNum - 1) * this.pageSize;
+          let endNum = startNum + this.pageSize;
+          this.pageArr = this.userArr.slice(startNum, endNum);
+        })
+        .catch(() => {
+          console.log('返回失败！');
+        });
     },
     addUser() {
       axios({
@@ -271,6 +296,9 @@ export default {
       })
         .then(res => {
           this.userArr = res.data;
+          let startNum = (this.pageNum - 1) * this.pageSize;
+          let endNum = startNum + this.pageSize;
+          this.pageArr = this.userArr.slice(startNum, endNum);
         })
         .catch(() => {
           console.log('返回失败！');
@@ -298,6 +326,23 @@ export default {
         .catch(() => {
           console.log('搜索失败！');
         });
+    },
+    changePage(val) {
+      this.pageNum = val;
+      axios('/api/user', {
+        headers: {
+          Authorization: 'aa'
+        }
+      })
+        .then(res => {
+          this.userArr = res.data;
+          let startNum = (this.pageNum - 1) * this.pageSize;
+          let endNum = startNum + this.pageSize;
+          this.pageArr = this.userArr.slice(startNum, endNum);
+        })
+        .catch(() => {
+          console.log('返回失败！');
+        });
     }
   },
   created() {
@@ -308,6 +353,9 @@ export default {
     })
       .then(res => {
         this.userArr = res.data;
+        let startNum = (this.pageNum - 1) * this.pageSize;
+        let endNum = startNum + this.pageSize;
+        this.pageArr = this.userArr.slice(startNum, endNum);
       })
       .catch(() => {
         console.log('返回失败！');
