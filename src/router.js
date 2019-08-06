@@ -6,6 +6,7 @@ import Home from './views/Home.vue';
 import Index from './views/lndex.vue';
 import Usermanage from './views/manage/Usermanage.vue';
 import Rolemanage from './views/manage/Rolemanage.vue';
+import Authoritymanage from './views/manage/Authoritymanage.vue';
 
 Vue.use(Router);
 
@@ -25,7 +26,7 @@ export default new Router({
       path: '/index',
       name: 'index',
       component: Index,
-      redirect: '/index/Usermanage',
+      redirect: '/Usermanage',
       children: [
         {
           path: 'Usermanage',
@@ -34,6 +35,10 @@ export default new Router({
         {
           path: 'Rolemanage',
           component: Rolemanage
+        },
+        {
+          path: 'Authoritymanage',
+          component: Authoritymanage
         }
       ]
     },
