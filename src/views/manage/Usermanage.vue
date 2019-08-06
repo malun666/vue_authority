@@ -11,7 +11,7 @@
     >
       <span slot="prepend">搜索</span>
     </Input>
-    <Table stripe border highlight-row :columns="columns1" :data="pageArr">
+    <Table stripe border highlight-row :columns="columns1" :data="userArr">
       <template slot-scope="{ row, index }" slot="id">
         <Input v-if="editIndex == index" type="text" v-model="editId" />
         <span v-else>{{ row.id }}</span>
@@ -58,7 +58,7 @@
     </Table>
     <Page
       style="margin-top: 15px"
-      :total="userArr.length"
+      :total="userLength"
       :page-size="pageSize"
       show-elevator
       :current="pageNum"
@@ -187,7 +187,8 @@ export default {
       addMail: '',
       searchCont: '',
       pageSize: 3,
-      pageNum: 1
+      pageNum: 1,
+      userLength: 0
     };
   },
   methods: {
@@ -258,10 +259,18 @@ export default {
         }
       })
         .then(res => {
+          this.userLength = res.data.length;
+        })
+        .catch(() => {
+          console.log('返回失败！');
+        });
+      axios(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`, {
+        headers: {
+          Authorization: 'aa'
+        }
+      })
+        .then(res => {
           this.userArr = res.data;
-          let startNum = (this.pageNum - 1) * this.pageSize;
-          let endNum = startNum + this.pageSize;
-          this.pageArr = this.userArr.slice(startNum, endNum);
         })
         .catch(() => {
           console.log('返回失败！');
@@ -295,10 +304,18 @@ export default {
         }
       })
         .then(res => {
+          this.userLength = res.data.length;
+        })
+        .catch(() => {
+          console.log('返回失败！');
+        });
+      axios(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`, {
+        headers: {
+          Authorization: 'aa'
+        }
+      })
+        .then(res => {
           this.userArr = res.data;
-          let startNum = (this.pageNum - 1) * this.pageSize;
-          let endNum = startNum + this.pageSize;
-          this.pageArr = this.userArr.slice(startNum, endNum);
         })
         .catch(() => {
           console.log('返回失败！');
@@ -335,10 +352,18 @@ export default {
         }
       })
         .then(res => {
+          this.userLength = res.data.length;
+        })
+        .catch(() => {
+          console.log('返回失败！');
+        });
+      axios(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`, {
+        headers: {
+          Authorization: 'aa'
+        }
+      })
+        .then(res => {
           this.userArr = res.data;
-          let startNum = (this.pageNum - 1) * this.pageSize;
-          let endNum = startNum + this.pageSize;
-          this.pageArr = this.userArr.slice(startNum, endNum);
         })
         .catch(() => {
           console.log('返回失败！');
@@ -352,10 +377,18 @@ export default {
       }
     })
       .then(res => {
+        this.userLength = res.data.length;
+      })
+      .catch(() => {
+        console.log('返回失败！');
+      });
+    axios('/api/user?_page=' + this.pageNum + '&_limit=' + this.pageSize, {
+      headers: {
+        Authorization: 'aa'
+      }
+    })
+      .then(res => {
         this.userArr = res.data;
-        let startNum = (this.pageNum - 1) * this.pageSize;
-        let endNum = startNum + this.pageSize;
-        this.pageArr = this.userArr.slice(startNum, endNum);
       })
       .catch(() => {
         console.log('返回失败！');
