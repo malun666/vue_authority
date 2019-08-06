@@ -26,7 +26,7 @@ export default new Router({
       path: '/index',
       name: 'index',
       component: Index,
-      redirect: '/Usermanage',
+      redirect: '/index/Usermanage',
       children: [
         {
           path: 'Usermanage',
