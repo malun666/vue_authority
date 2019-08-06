@@ -34,7 +34,7 @@
           :style="{ background: '#5b6270' }"
           v-model="isCollapsed"
         >
-          <Menu active-name="1-1" theme="dark" width="auto" :open-names="['1']">
+          <Menu theme="dark" width="auto" :open-names="['1']">
             <Submenu name="1">
               <template slot="title">
                 <Icon type="ios-navigate" size="22"></Icon>
@@ -46,7 +46,7 @@
               <MenuItem name="1-2" to="/index/Rolemanage"
                 ><Icon type="md-contact" size="20" />角色管理</MenuItem
               >
-              <MenuItem name="1-3"
+              <MenuItem name="1-3" to="/index/Authoritymanage"
                 ><Icon type="md-contacts" size="20" />权限管理</MenuItem
               >
               <MenuItem name="1-4"
@@ -90,7 +90,14 @@
 </template>
 
 <script>
-export default {};
+export default {
+  name: 'layout',
+  data() {
+    return {
+      activeName: '1-1'
+    };
+  }
+};
 </script>
 <style scoped>
 button {
