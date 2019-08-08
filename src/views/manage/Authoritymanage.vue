@@ -49,7 +49,7 @@
         <span v-else>{{ row.code }}</span>
       </template>
       <template slot-scope="{ row, index }" slot="url">
-        <Input v-if="editIndex == index" type="text" v-model="editCode" />
+        <Input v-if="editIndex == index" type="text" v-model="editUrl" />
         <span v-else>{{ row.url }}</span>
       </template>
       <template slot-scope="{ row, index }" slot="action">
@@ -249,11 +249,6 @@ export default {
         {
           title: 'subon',
           slot: 'subon',
-          align: 'center'
-        },
-        {
-          title: 'subby',
-          slot: 'subby',
           align: 'center'
         },
         {

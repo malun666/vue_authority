@@ -1,8 +1,9 @@
 <template>
   <div class="userManage">
-    <Button type="success" style="margin-bottom: 10px" @click="initDrawer"
-      >添加用户</Button
-    >
+    <div class="btns">
+      <Button type="success" @click="initDrawer">添加用户</Button>
+      <Button type="info" @click="addAuthority">添加权限</Button>
+    </div>
     <Input
       search
       style="width: 300px; margin-bottom: 10px"
@@ -11,7 +12,14 @@
     >
       <span slot="prepend">搜索</span>
     </Input>
-    <Table stripe border highlight-row :columns="columns1" :data="userArr">
+    <Table
+      stripe
+      border
+      highlight-row
+      :columns="columns1"
+      :data="userArr"
+      @on-selection-change="selBack"
+    >
       <template slot-scope="{ row, index }" slot="id">
         <Input v-if="editIndex == index" type="text" v-model="editId" />
         <span v-else>{{ row.id }}</span>
@@ -128,6 +136,19 @@
         >取消</Button
       >
     </Drawer>
+    <Modal v-model="showModal" title="设置权限" @on-ok="determineAuthority">
+      <p>正在给{{ setAuthorityUser.name }}设置权限</p>
+      <CheckboxGroup
+        v-for="(item, index) in perArr"
+        :key="index"
+        v-model="checkArr"
+        @on-change="checkBoxChange"
+      >
+        <Checkbox :label="item.id">
+          <span>{{ item.des }}</span>
+        </Checkbox>
+      </CheckboxGroup>
+    </Modal>
   </div>
 </template>
 
@@ -139,6 +160,11 @@ export default {
   data() {
     return {
       columns1: [
+        {
+          type: 'selection',
+          width: 60,
+          align: 'center'
+        },
         {
           title: '编号',
           slot: 'id',
@@ -172,7 +198,6 @@ export default {
         }
       ],
       userArr: [],
-      pageArr: [],
       editId: '',
       editName: '',
       editSchool: '',
@@ -188,7 +213,15 @@ export default {
       searchCont: '',
       pageSize: 3,
       pageNum: 1,
-      userLength: 0
+      userLength: 0,
+      showModal: false,
+      selectionNum: 0,
+      setAuthorityUser: {},
+      perArr: [],
+      checkArr: [],
+      userPermission: [],
+      defaultCheck: false,
+      nowCheck: false
     };
   },
   methods: {
@@ -339,6 +372,7 @@ export default {
       })
         .then(res => {
           this.userArr = res.data;
+          this.userLength = res.data.length;
         })
         .catch(() => {
           console.log('搜索失败！');
@@ -368,6 +402,107 @@ export default {
         .catch(() => {
           console.log('返回失败！');
         });
+    },
+    selBack(selection) {
+      this.selectionNum = selection.length;
+      if (this.selectionNum != 0) {
+        //是因为只要checkbox变化就会触发这个函数，所以让取消checkbox时，不要传入返回的selection
+        this.setAuthorityUser = selection[0];
+        console.log(this.setAuthorityUser);
+      }
+    },
+    addAuthority() {
+      if (this.selectionNum != 1) {
+        this.$Message.warning('只能选择一个用户进行添加权限，请重新选择');
+      } else {
+        this.checkArr = [];
+        axios('/per/user_permission?userId=' + this.setAuthorityUser.id, {
+          headers: {
+            Authorization: 'aa'
+          }
+        })
+          .then(res => {
+            this.userPermission = res.data; //这个是拿的当前添加用户的所有权限
+            for (let i = 0; i < res.data.length; i++) {
+              this.checkArr.push(res.data[i].permissionId);
+            }
+            // res.data.forEach(ele1 => {
+            //   this.perArr.forEach(ele2 => {
+            //     if (ele1.permissionId == ele2.id) {0
+            //       this.checkArr.push(ele2.id);
+            //       var defaultCheck = true;
+            //     } else {
+            //       var defaultCheck = false;
+            //     }
+            //   });
+            // });
+          })
+          .catch(() => {
+            console.log('返回失败！');
+          });
+        this.showModal = true;
+      }
+    },
+    determineAuthority() {
+      this.perArr.forEach(ele1 => {
+        let a = this.userPermission.find(cur => {
+          return cur.permissionId == ele1.id; //当前用户是否有这个权限
+        });
+        if (a) {
+          this.defaultCheck = true; //从权限增删改查表拿出来和当前用户已有的权限匹配一下，为刚开始默认该显示选中还是未选中
+        }
+        // let b = this.checkArr.indexOf(ele1.id);
+        if (this.checkArr.indexOf(ele1.id) != -1) {
+          //表示存在此权限的时候，也就是现在为选中这个权限的状态
+          this.nowCheck = true;
+        }
+        if (this.defaultCheck == this.nowCheck) {
+          return;
+        } else if (this.defaultCheck == false) {
+          axios({
+            method: 'post',
+            url: '/per/user_permission',
+            headers: {
+              Authorization: 'aa'
+            },
+            data: {
+              id: Date.now(),
+              userId: this.setAuthorityUser.id,
+              permissionId: ele1.id,
+              del: 0,
+              subOn: new Date()
+            }
+          })
+            .then(res => {
+              console.log(res.data); //这里返回的就是添加的那一条数据
+            })
+            .catch(() => {
+              console.log('请求失败！');
+            });
+        }
+      });
+      // for (let i = 0; i < this.checkArr.length; i++) {
+      //   axios({
+      //     method: 'post',
+      //     url: '/per/user_permission',
+      //     headers: {
+      //       Authorization: 'aa'
+      //     },
+      //     data: {
+      //       id: Date.now(),
+      //       userId: this.setAuthorityUser.id,
+      //       permissionId: this.checkArr[i],
+      //       del: 0,
+      //       subOn: new Date()
+      //     }
+      //   })
+      //     .then(res => {
+      //       console.log(res.data); //这里返回的就是添加的那一条数据
+      //     })
+      //     .catch(() => {
+      //       console.log('请求失败！');
+      //     });
+      // }
     }
   },
   created() {
@@ -393,11 +528,28 @@ export default {
       .catch(() => {
         console.log('返回失败！');
       });
+    axios('/per/permission', {
+      headers: {
+        Authorization: 'aa'
+      }
+    })
+      .then(res => {
+        this.perArr = res.data;
+      })
+      .catch(() => {
+        console.log('请求失败!');
+      });
   }
 };
 </script>
 
 <style lang="scss" scoped>
+.btns {
+  margin-bottom: 10px;
+  button {
+    margin-right: 10px;
+  }
+}
 .item {
   margin-bottom: 10px;
 }
