@@ -142,7 +142,6 @@
         v-for="(item, index) in perArr"
         :key="index"
         v-model="checkArr"
-        @on-change="checkBoxChange"
       >
         <Checkbox :label="item.id">
           <span>{{ item.des }}</span>
@@ -154,6 +153,7 @@
 
 <script>
 import axios from 'axios';
+import { constants } from 'crypto';
 
 export default {
   name: 'userManage',
@@ -221,7 +221,8 @@ export default {
       checkArr: [],
       userPermission: [],
       defaultCheck: false,
-      nowCheck: false
+      nowCheck: false,
+      userPermissionInd: 0
     };
   },
   methods: {
@@ -422,7 +423,7 @@ export default {
           }
         })
           .then(res => {
-            this.userPermission = res.data; //这个是拿的当前添加用户的所有权限
+            this.userPermission = res.data; //这个是拿的当前添加用户的已有的所有权限
             for (let i = 0; i < res.data.length; i++) {
               this.checkArr.push(res.data[i].permissionId);
             }
@@ -445,16 +446,21 @@ export default {
     },
     determineAuthority() {
       this.perArr.forEach(ele1 => {
-        let a = this.userPermission.find(cur => {
+        this.userPermissionInd = this.userPermission.findIndex(cur => {
+          //这个索引是当前用户拥有的权限user_permisson组成的新数组里有这个权限的那条数据的索引
           return cur.permissionId == ele1.id; //当前用户是否有这个权限
         });
-        if (a) {
+        if (this.userPermissionInd != -1) {
           this.defaultCheck = true; //从权限增删改查表拿出来和当前用户已有的权限匹配一下，为刚开始默认该显示选中还是未选中
+        } else {
+          this.defaultCheck = false;
         }
         // let b = this.checkArr.indexOf(ele1.id);
         if (this.checkArr.indexOf(ele1.id) != -1) {
           //表示存在此权限的时候，也就是现在为选中这个权限的状态
           this.nowCheck = true;
+        } else {
+          this.nowCheck = false;
         }
         if (this.defaultCheck == this.nowCheck) {
           return;
@@ -478,6 +484,22 @@ export default {
             })
             .catch(() => {
               console.log('请求失败！');
+            });
+        } else if (this.defaultCheck == true) {
+          axios({
+            method: 'delete',
+            url:
+              '/per/user_permission/' +
+              this.userPermission[this.userPermissionInd].id,
+            headers: {
+              Authorization: 'aa'
+            }
+          })
+            .then(res => {
+              console.log(res.data);
+            })
+            .catch(() => {
+              constants.log('请求失败！');
             });
         }
       });
