@@ -142,7 +142,6 @@
         v-for="(item, index) in perArr"
         :key="index"
         v-model="checkArr"
-        @on-change="checkBoxChange"
       >
         <Checkbox :label="item.id">
           <span>{{ item.des }}</span>
@@ -422,7 +421,7 @@ export default {
           }
         })
           .then(res => {
-            this.userPermission = res.data; //这个是拿的当前添加用户的所有权限
+            this.userPermission = res.data; //这个是拿的当前添加用户的已有的所有权限
             for (let i = 0; i < res.data.length; i++) {
               this.checkArr.push(res.data[i].permissionId);
             }
@@ -450,11 +449,15 @@ export default {
         });
         if (a) {
           this.defaultCheck = true; //从权限增删改查表拿出来和当前用户已有的权限匹配一下，为刚开始默认该显示选中还是未选中
+        } else {
+          this.defaultCheck = false;
         }
         // let b = this.checkArr.indexOf(ele1.id);
         if (this.checkArr.indexOf(ele1.id) != -1) {
           //表示存在此权限的时候，也就是现在为选中这个权限的状态
           this.nowCheck = true;
+        } else {
+          this.nowCheck = false;
         }
         if (this.defaultCheck == this.nowCheck) {
           return;
