@@ -55,11 +55,11 @@
     </Modal>
 
     <Modal title="Title" v-model="modal10" class-name="ivu-modal-wrap">
-      <CheckboxGroup v-model="fruit">
+      <!-- <CheckboxGroup v-model="fruit">
         <Checkbox label="香蕉"></Checkbox>
         <Checkbox label="苹果"></Checkbox>
         <Checkbox label="西瓜"></Checkbox>
-      </CheckboxGroup>
+      </CheckboxGroup> -->
     </Modal>
 
     <Table :columns="columns" border :data="dataArr">
