@@ -2,7 +2,8 @@
   <div class="userManage">
     <div class="btns">
       <Button type="success" @click="initDrawer">添加用户</Button>
-      <Button type="info" @click="addAuthority">添加权限</Button>
+      <Button type="info" @click="addAuthority">用户添加权限</Button>
+      <Button type="warning" @click="addRole">用户添加角色</Button>
     </div>
     <Input
       search
@@ -39,6 +40,14 @@
       <template slot-scope="{ row, index }" slot="mail">
         <Input v-if="editIndex == index" type="text" v-model="editMail" />
         <span v-else>{{ row.mail }}</span>
+      </template>
+      <template slot-scope="{ row, index }" slot="username">
+        <Input v-if="editIndex == index" type="text" v-model="editUsername" />
+        <span v-else>{{ row.username }}</span>
+      </template>
+      <template slot-scope="{ row, index }" slot="password">
+        <Input v-if="editIndex == index" type="text" v-model="editPassword" />
+        <span v-else>{{ row.password }}</span>
       </template>
       <template slot-scope="{ row, index }" slot="action">
         <template v-if="editIndex == index">
@@ -148,12 +157,23 @@
         </Checkbox>
       </CheckboxGroup>
     </Modal>
+    <Modal v-model="showModalRole" title="设置角色" @on-ok="determineRole">
+      <p>正在给{{ setAuthorityUser.name }}设置角色</p>
+      <CheckboxGroup
+        v-for="(item, index) in roleArr"
+        :key="index"
+        v-model="checkArr2"
+      >
+        <Checkbox :label="item.id">
+          <span>{{ item.name }}</span>
+        </Checkbox>
+      </CheckboxGroup>
+    </Modal>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-import { constants } from 'crypto';
+import api from '../../api/http';
 
 export default {
   name: 'userManage',
@@ -192,6 +212,16 @@ export default {
           align: 'center'
         },
         {
+          title: '账号',
+          slot: 'username',
+          align: 'center'
+        },
+        {
+          title: '密码',
+          slot: 'password',
+          align: 'center'
+        },
+        {
           title: '操作',
           slot: 'action',
           align: 'center'
@@ -203,6 +233,8 @@ export default {
       editSchool: '',
       editPhone: '',
       editMail: '',
+      editUsername: '',
+      editPassword: '',
       editIndex: -1,
       value: false,
       addId: '',
@@ -222,7 +254,12 @@ export default {
       userPermission: [],
       defaultCheck: false,
       nowCheck: false,
-      userPermissionInd: 0
+      userPermissionInd: 0,
+      showModalRole: false,
+      roleArr: [],
+      userRole: [],
+      checkArr2: [],
+      userRoleIndex: 0
     };
   },
   methods: {
@@ -232,77 +269,64 @@ export default {
       this.editSchool = row.school;
       this.editPhone = row.phone;
       this.editMail = row.mail;
+      this.editUsername = row.username;
+      this.editPassword = row.password;
       this.editIndex = index;
     },
     determineSave(row) {
-      // console.log(row.id);
-      axios({
-        method: 'put',
-        url: '/api/user/' + this.editId,
-        headers: {
-          Authorization: 'aa'
-        },
-        data: {
+      api
+        .modifyUser('/api/user/' + this.editId, {
           id: this.editId,
           name: this.editName,
           school: this.editSchool,
           phone: this.editPhone,
-          mail: this.editMail
-        }
-      })
+          mail: this.editMail,
+          username: this.editUsername,
+          password: this.editPassword
+        })
         .then(res => {
           console.log(res, '成功！');
         })
-        .catch();
+        .catch(() => {
+          console.log('修改请求发送失败！');
+        });
       this.editIndex = -1;
       row.id = this.editId;
       row.name = this.editName;
       row.school = this.editSchool;
       row.phone = this.editPhone;
       row.mail = this.editMail;
-      // axios('/api/user', {
-      //   headers: {
-      //     Authorization: 'aa'
-      //   }
-      // })
-      //   .then(res => {
-      //     this.userArr = res.data;
-      //   })
-      //   .catch(() => {
-      //     console.log('返回失败！');
-      //   });
+      row.username = this.editUsername;
+      row.password = this.editPassword;
+      api
+        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
+        .then(res => {
+          this.userArr = res.data;
+        })
+        .catch(() => {
+          console.log('返回失败！');
+        });
     },
     deleteRow(row, index) {
       this.userArr.splice(index, 1);
-      axios({
-        method: 'delete',
-        url: '/api/user/' + row.id,
-        headers: {
-          Authorization: 'aa'
-        }
-      })
+      api
+        .deleteUser('/api/user/' + row.id)
         .then(res => {
           console.log(res.data);
         })
         .catch(() => {
           console.log('删除失败！');
         });
-      axios('/api/user', {
-        headers: {
-          Authorization: 'aa'
-        }
-      })
+      api
+        .getLength()
         .then(res => {
           this.userLength = res.data.length;
         })
         .catch(() => {
           console.log('返回失败！');
         });
-      axios(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`, {
-        headers: {
-          Authorization: 'aa'
-        }
-      })
+      api
+        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
         .then(res => {
           this.userArr = res.data;
         })
@@ -311,20 +335,16 @@ export default {
         });
     },
     addUser() {
-      axios({
-        method: 'post',
-        url: '/api/user',
-        headers: {
-          Authorization: 'aa'
-        },
-        data: {
+      api
+        .addUser('/api/user', {
           id: Number(this.addId),
           name: this.addName,
           school: this.addSchool,
           phone: this.addPhone,
-          mail: this.addMail
-        }
-      })
+          mail: this.addMail,
+          username: this.editUsername,
+          password: this.editPassword
+        })
         .then(res => {
           this.value = false;
           console.log(res.data);
@@ -332,22 +352,16 @@ export default {
         .catch(() => {
           console.log('添加失败！');
         });
-      axios('/api/user', {
-        headers: {
-          Authorization: 'aa'
-        }
-      })
+      api
+        .getLength()
         .then(res => {
           this.userLength = res.data.length;
         })
         .catch(() => {
           console.log('返回失败！');
         });
-      axios(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`, {
-        headers: {
-          Authorization: 'aa'
-        }
-      })
+      api
+        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
         .then(res => {
           this.userArr = res.data;
         })
@@ -364,13 +378,8 @@ export default {
       this.addMail = '';
     },
     searchUser() {
-      axios({
-        method: 'get',
-        url: '/api/user/?q=' + this.searchCont,
-        headers: {
-          Authorization: 'aa'
-        }
-      })
+      api
+        .searchUser('/api/user/?q=' + this.searchCont)
         .then(res => {
           this.userArr = res.data;
           this.userLength = res.data.length;
@@ -381,22 +390,8 @@ export default {
     },
     changePage(val) {
       this.pageNum = val;
-      axios('/api/user', {
-        headers: {
-          Authorization: 'aa'
-        }
-      })
-        .then(res => {
-          this.userLength = res.data.length;
-        })
-        .catch(() => {
-          console.log('返回失败！');
-        });
-      axios(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`, {
-        headers: {
-          Authorization: 'aa'
-        }
-      })
+      api
+        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
         .then(res => {
           this.userArr = res.data;
         })
@@ -413,30 +408,27 @@ export default {
       }
     },
     addAuthority() {
+      api
+        .getAllauthority()
+        .then(res => {
+          this.perArr = res.data;
+        })
+        .catch(() => {
+          console.log('请求失败!');
+        });
       if (this.selectionNum != 1) {
         this.$Message.warning('只能选择一个用户进行添加权限，请重新选择');
       } else {
         this.checkArr = [];
-        axios('/per/user_permission?userId=' + this.setAuthorityUser.id, {
-          headers: {
-            Authorization: 'aa'
-          }
-        })
+        api
+          .getCurUserPermission(
+            '/per/user_permission?userId=' + this.setAuthorityUser.id
+          )
           .then(res => {
             this.userPermission = res.data; //这个是拿的当前添加用户的已有的所有权限
             for (let i = 0; i < res.data.length; i++) {
               this.checkArr.push(res.data[i].permissionId);
             }
-            // res.data.forEach(ele1 => {
-            //   this.perArr.forEach(ele2 => {
-            //     if (ele1.permissionId == ele2.id) {0
-            //       this.checkArr.push(ele2.id);
-            //       var defaultCheck = true;
-            //     } else {
-            //       var defaultCheck = false;
-            //     }
-            //   });
-            // });
           })
           .catch(() => {
             console.log('返回失败！');
@@ -445,7 +437,9 @@ export default {
       }
     },
     determineAuthority() {
+      var b = 0;
       this.perArr.forEach(ele1 => {
+        b++;
         this.userPermissionInd = this.userPermission.findIndex(cur => {
           //这个索引是当前用户拥有的权限user_permisson组成的新数组里有这个权限的那条数据的索引
           return cur.permissionId == ele1.id; //当前用户是否有这个权限
@@ -465,20 +459,14 @@ export default {
         if (this.defaultCheck == this.nowCheck) {
           return;
         } else if (this.defaultCheck == false) {
-          axios({
-            method: 'post',
-            url: '/per/user_permission',
-            headers: {
-              Authorization: 'aa'
-            },
-            data: {
-              id: Date.now(),
+          api
+            .userAddPermission('/per/user_permission', {
+              id: Date.now() + b,
               userId: this.setAuthorityUser.id,
               permissionId: ele1.id,
               del: 0,
               subOn: new Date()
-            }
-          })
+            })
             .then(res => {
               console.log(res.data); //这里返回的就是添加的那一条数据
             })
@@ -486,81 +474,114 @@ export default {
               console.log('请求失败！');
             });
         } else if (this.defaultCheck == true) {
-          axios({
-            method: 'delete',
-            url:
+          api
+            .userDeletePermission(
               '/per/user_permission/' +
-              this.userPermission[this.userPermissionInd].id,
-            headers: {
-              Authorization: 'aa'
-            }
-          })
+                this.userPermission[this.userPermissionInd].id
+            )
             .then(res => {
               console.log(res.data);
             })
             .catch(() => {
-              constants.log('请求失败！');
+              console.log('请求失败！');
             });
         }
       });
-      // for (let i = 0; i < this.checkArr.length; i++) {
-      //   axios({
-      //     method: 'post',
-      //     url: '/per/user_permission',
-      //     headers: {
-      //       Authorization: 'aa'
-      //     },
-      //     data: {
-      //       id: Date.now(),
-      //       userId: this.setAuthorityUser.id,
-      //       permissionId: this.checkArr[i],
-      //       del: 0,
-      //       subOn: new Date()
-      //     }
-      //   })
-      //     .then(res => {
-      //       console.log(res.data); //这里返回的就是添加的那一条数据
-      //     })
-      //     .catch(() => {
-      //       console.log('请求失败！');
-      //     });
-      // }
+    },
+    addRole() {
+      api
+        .getAllRole()
+        .then(res => {
+          this.roleArr = res.data;
+        })
+        .catch(() => {
+          console.log('请求失败！');
+        });
+      if (this.selectionNum != 1) {
+        this.$Message.warning('只能选择一个用户进行添加权限，请重新选择');
+      } else {
+        this.checkArr2 = [];
+        api
+          .getCurUserRole('/per/user_role?userId=' + this.setAuthorityUser.id)
+          .then(res => {
+            this.userRole = res.data; //这个是拿的当前添加用户的已有的所有权限
+            for (let i = 0; i < res.data.length; i++) {
+              this.checkArr2.push(res.data[i].roleId);
+            }
+          })
+          .catch(() => {
+            console.log('返回失败！');
+          });
+        this.showModalRole = true;
+      }
+    },
+    determineRole() {
+      var a = 0;
+      this.roleArr.forEach(ele1 => {
+        a++;
+        this.userRoleIndex = this.userRole.findIndex(cur => {
+          return cur.roleId == ele1.id; //当前用户是否有这个权限
+        });
+        if (this.userRoleIndex != -1) {
+          this.defaultCheck = true; //从权限增删改查表拿出来和当前用户已有的权限匹配一下，为刚开始默认该显示选中还是未选中
+        } else {
+          this.defaultCheck = false;
+        }
+        // let b = this.checkArr.indexOf(ele1.id);
+        if (this.checkArr2.indexOf(ele1.id) != -1) {
+          //表示存在此权限的时候，也就是现在为选中这个权限的状态
+          this.nowCheck = true;
+        } else {
+          this.nowCheck = false;
+        }
+        if (this.defaultCheck == this.nowCheck) {
+          return;
+        } else if (this.defaultCheck == false) {
+          api
+            .userAddRole('/per/user_role', {
+              id: Date.now() + a,
+              userId: this.setAuthorityUser.id,
+              roleId: ele1.id,
+              del: 0,
+              subOn: new Date()
+            })
+            .then(res => {
+              console.log(res.data); //这里返回的就是添加的那一条数据
+            })
+            .catch(() => {
+              console.log('请求失败！');
+            });
+        } else if (this.defaultCheck == true) {
+          api
+            .userDeleteRole(
+              '/per/user_role/' + this.userRole[this.userRoleIndex].id
+            )
+            .then(res => {
+              console.log(res.data);
+            })
+            .catch(() => {
+              console.log('请求失败！');
+            });
+        }
+      });
     }
   },
   created() {
-    axios('/api/user', {
-      headers: {
-        Authorization: 'aa'
-      }
-    })
+    api
+      .getLength()
       .then(res => {
         this.userLength = res.data.length;
       })
       .catch(() => {
         console.log('返回失败！');
       });
-    axios('/api/user?_page=' + this.pageNum + '&_limit=' + this.pageSize, {
-      headers: {
-        Authorization: 'aa'
-      }
-    })
+    api
+      .getUser('/api/user?_page=' + this.pageNum + '&_limit=' + this.pageSize)
       .then(res => {
         this.userArr = res.data;
       })
       .catch(() => {
         console.log('返回失败！');
-      });
-    axios('/per/permission', {
-      headers: {
-        Authorization: 'aa'
-      }
-    })
-      .then(res => {
-        this.perArr = res.data;
-        console.log(this.perArr);
-      })
-      .catch(() => {
-        console.log('请求失败!');
       });
   }
 };

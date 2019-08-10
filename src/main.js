@@ -14,6 +14,12 @@ router.beforeEach((to, from, next) => {
       Object.prototype.toString.call(store.getters.takeLogin).slice(8, -1) ==
       'Object'
     ) {
+      //拿到当前登录用户
+
+      // 拿到当前登录用户的所有权限
+
+      // 拿到当前跳转的路由对应的权限id
+      // to.meta.perId
       next();
     } else {
       next('/');
