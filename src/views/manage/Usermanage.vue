@@ -557,6 +557,7 @@ export default {
     })
       .then(res => {
         this.perArr = res.data;
+        console.log(this.perArr);
       })
       .catch(() => {
         console.log('请求失败!');
