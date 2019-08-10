@@ -2,6 +2,7 @@
   <div class="layout">
     <Layout style="height:100%">
       <Header>
+        <!-- <button @click="aa">注销</button> -->
         <Menu mode="horizontal" theme="dark" active-name="1">
           <div class="layout-logo">管理平台</div>
           <div class="layout-nav">
@@ -17,10 +18,7 @@
               <Icon type="ios-analytics"></Icon>
               Item 3
             </MenuItem>
-            <MenuItem name="4">
-              <Icon type="ios-paper"></Icon>
-              Item 4
-            </MenuItem>
+            <Button type="error" @click="logOut">注销</Button>
           </div>
         </Menu>
       </Header>
@@ -89,16 +87,6 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'layout',
-  data() {
-    return {
-      activeName: '1-1'
-    };
-  }
-};
-</script>
 <style scoped>
 button {
   margin-right: 10px;
@@ -134,6 +122,7 @@ button {
 
 <script>
 export default {
+  name: 'layout',
   data() {
     return {
       isCollapsed: false
@@ -142,6 +131,12 @@ export default {
   computed: {
     menuitemClasses: function() {
       return ['menu-item', this.isCollapsed ? 'collapsed-menu' : ''];
+    }
+  },
+  methods: {
+    logOut() {
+      sessionStorage.clear();
+      location.reload();
     }
   }
 };

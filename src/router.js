@@ -20,7 +20,10 @@ export default new Router({
     {
       path: '/home',
       name: 'home',
-      component: Home
+      component: Home,
+      meta: {
+        perId: 2003
+      }
     },
     {
       path: '/index',
