@@ -4,9 +4,8 @@
       <Button type="primary" class="mTop" @click="modal2 = true"
         >添加数据</Button
       >
-      <Button type="success" class="fl" @click="modal10 = true"
-        >添加权限</Button
-      >
+      <!-- <Button type="success" class="fl" @click="modal10 = true" -->
+      <Button type="success" class="fl" @click="addPower">添加权限</Button>
       <Input
         class="fl"
         search
@@ -14,6 +13,7 @@
         v-model="searchTxt"
         @on-search="searchText"
         placeholder="请输入查找的内容"
+        v-model.trim="searchTxt"
       >
         <span slot="prepend">搜索</span>
       </Input>
@@ -54,15 +54,34 @@
       </Form>
     </Modal>
 
-    <Modal title="Title" v-model="modal10" class-name="ivu-modal-wrap">
-      <CheckboxGroup v-model="fruit">
-        <Checkbox label="香蕉"></Checkbox>
-        <Checkbox label="苹果"></Checkbox>
-        <Checkbox label="西瓜"></Checkbox>
+    <Modal
+      title="设置权限"
+      v-model="modal10"
+      class-name="ivu-modal-wrap"
+      @on-ok="ok"
+      @on-cancel="cancel"
+    >
+      <p>正在给{{ setCheckObj.name }}设置权限</p>
+      <CheckboxGroup v-model="social">
+        <Checkbox
+          v-for="(item, index) in addPowerR"
+          :key="index"
+          :label="item.id"
+        >
+          <!-- v-model="checkList" -->
+          <Icon type="logo-facebook"></Icon>
+          <span>{{ item.des }}</span>
+        </Checkbox>
       </CheckboxGroup>
     </Modal>
 
-    <Table :columns="columns" border :data="dataArr">
+    <Table
+      :columns="columns"
+      border
+      ref="selection"
+      :data="dataArr"
+      @on-selection-change="activeCheck"
+    >
       <template slot-scope="{ row, index }" slot="id">
         <Input type="text" v-model="editId" v-if="editIndex === index" />
         <span v-else>{{ row.id }}</span>
@@ -151,6 +170,11 @@ export default {
     return {
       columns: [
         {
+          type: 'selection',
+          width: 60,
+          align: 'center'
+        },
+        {
           title: '编号',
           slot: 'id',
           align: 'center',
@@ -181,6 +205,7 @@ export default {
       modal1: false, //模态框
       modal10: false,
       dataArr: [],
+
       // 初始化分页S
       pageSize: 5, // 每页显示多少条
       pageNum: 1, //第几页
@@ -192,6 +217,22 @@ export default {
       editContent: '',
       editTime: '',
       editIndex: -1, // 当前聚焦的输入框的行数
+
+      // 权限添加s
+      addPowerR: [],
+      powerpid: '',
+      powerdes: '',
+      powerstatus: '',
+      powerid: '',
+      activeCheckbox: '',
+      setCheckObj: {},
+      social: [], //权限管理选择
+      resData: '', //看源数据接口是否返回已经设置权限的数据
+      statrsCheck: false, //过去的
+      nowCheck: false, //现在的
+      // checkList: [],
+      // 权限添加E
+
       // 提交表单
       formValidate: {
         postName: '',
@@ -224,6 +265,84 @@ export default {
     };
   },
   methods: {
+    ok() {
+      //social. 弹出框的权限管理选择
+      // console.log(this.social.length);
+      // console.log(this.social);
+      //全部的权限 没有选择的权限
+      this.addPowerR.forEach(item => {
+        console.log(item.id);
+        //从后台拿过来角色已经选中的权限的
+        var index = this.resData.findIndex(val => {
+          // 角色已经选中的==全部权限的
+          return val.permissionId == item.id;
+        });
+        // 如果索引那么说明已经存在
+        if (index != -1) {
+          this.statrsCheck = true;
+        } else {
+          this.statrsCheck = false;
+        }
+
+        let statrsIndex = this.social.indexOf(item.id);
+        if (statrsIndex != -1) {
+          this.nowCheck = true;
+        } else {
+          this.nowCheck = false;
+        }
+
+        if (this.nowCheck == this.statrsCheck) {
+          return;
+        } else if (this.nowCheck) {
+          //添加
+          axios
+            .post('/per/role_permission', {
+              id: Date.now(), // 现在时间
+              roleId: this.setCheckObj.id, //
+              permissionId: item.id,
+              del: '', //
+              subOn: '' //
+            })
+            .then(res => {
+              console.log(res.data);
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        } else if (this.statrsCheck) {
+          //如果改变 过去有，则删除
+          axios
+            .delete('/per/role_permission/' + this.resData[index].id)
+            .then(res => {
+              console.log(res.data);
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        }
+      });
+
+      /*  axios
+          .post('/per/role_permission', {
+            id: Date.now(),
+            roleId: this.setCheckObj.id,
+            permissionId: this.social,
+            del: 'false',
+            subOn: '2019'
+          })
+          .then(res => {
+            console.log(res.data);
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+ */
+      // }
+    },
+    cancel() {
+      this.$Message.info('你已取消设置权限');
+    },
+
     changePage(val) {
       this.pageNum = val;
       // console.log(val);
@@ -240,11 +359,64 @@ export default {
           console.log('返回失败');
         });
     },
+    // 添加权限2  多选框的长度
+    activeCheck(selection) {
+      this.activeCheckbox = selection.length;
+      // console.log(this.activeCheckbox);
+      if (this.activeCheckbox != 0) {
+        // this.setCheckObj = selection;
+        this.setCheckObj = selection[0];
+        // console.log(this.setCheckObj.id);
+      }
+    },
+    // 添加权限及过滤多选框问题
+    addPower() {
+      // console.log(this.activeCheckbox);
+      if (!this.activeCheckbox) {
+        this.$Message.warning('请勾选需要操作的数据！');
+      } else if (this.activeCheckbox > 1) {
+        console.log(this.activeCheckbox);
+        this.$Message.warning('每次勾选的数据只能为1条,请重新勾选！');
+      } else {
+        this.modal10 = true;
+        axios({
+          method: 'get',
+          url: '/per/permission',
+          headers: {
+            Authorization: 'aa'
+          }
+        })
+          .then(res => {
+            this.addPowerR = res.data;
+            // 权限的数据
+          })
+          .catch(() => {
+            console.log('数据返回错误！');
+          });
 
+        // 上面是展示后台传过来的数据   下面接口是查看要添加数据接口是否有选中的状态
+        axios
+          .get('/per/role_permission?roleId=' + this.setCheckObj.id)
+          .then(res => {
+            // console.log(res.data);
+            this.resData = res.data; //添加权限时候发送请求后台数据是否已经设置过
+            this.social = []; // 先清空下面会设置的
+            this.resData.forEach(item => {
+              // console.log(item);
+              this.social.push(item.permissionId); //把后台设置好的权限追加到目前打开的模态框
+            });
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }
+    },
     // 查找对应的数据
     searchText() {
+      //  this.searchTxt
       // 有问题  keyVal==undefined || keyVal=="" || keyVal==null
-      if (this.searchTxt.length > 0 && this.searchTxt != ' ') {
+      // if (this.searchTxt.length > 0 && this.searchTxt != ' ') {
+      if (this.searchTxt) {
         axios({
           method: 'get',
           url: '/per/role/?q=' + this.searchTxt,
@@ -350,16 +522,6 @@ export default {
   },
   // 数据
   created() {
-    /*  axios('/per/role', {
-      headers: { Authorization: 'aa' }
-    })
-      .then(res => {
-        this.dataArr = res.data;
-      })
-      .catch(function(error) {
-        console.log(error);
-      }); */
-
     axios('/per/role', {
       headers: { Authorization: 'aa' }
     })
