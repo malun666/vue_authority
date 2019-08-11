@@ -3,18 +3,18 @@
     <Layout style="height:100%">
       <Header>
         <!-- <button @click="aa">注销</button> -->
-        <Menu mode="horizontal" theme="dark" active-name="1">
+        <Menu mode="horizontal" theme="dark">
           <div class="layout-logo">管理平台</div>
           <div class="layout-nav">
-            <MenuItem name="1">
+            <MenuItem name="1" to="/index/Test1">
               <Icon type="ios-navigate"></Icon>
               Item 1
             </MenuItem>
-            <MenuItem name="2">
+            <MenuItem name="2" to="/index/Test2">
               <Icon type="ios-keypad"></Icon>
               Item 2
             </MenuItem>
-            <MenuItem name="3">
+            <MenuItem name="3" to="/index/Test3">
               <Icon type="ios-analytics"></Icon>
               Item 3
             </MenuItem>
@@ -38,7 +38,11 @@
                 <Icon type="ios-navigate" size="22"></Icon>
                 Item 1
               </template>
-              <MenuItem name="1-1" to="/index/Usermanage">
+              <MenuItem
+                name="1-1"
+                to="/index/Usermanage"
+                v-if="judgeMenu() == 1"
+              >
                 <Icon type="ios-body" size="20" />用户管理</MenuItem
               >
               <MenuItem name="1-2" to="/index/Rolemanage"
@@ -87,6 +91,50 @@
   </div>
 </template>
 
+<script>
+import store from '../store.js';
+import api from '../api/http.js';
+
+export default {
+  name: 'layout',
+  data() {
+    return {
+      isCollapsed: false,
+      menuArr: []
+    };
+  },
+  computed: {
+    menuitemClasses: function() {
+      return ['menu-item', this.isCollapsed ? 'collapsed-menu' : ''];
+    }
+  },
+  methods: {
+    // ...mapMutations(['']);
+    logOut() {
+      sessionStorage.clear();
+      location.reload();
+    },
+    judgeMenu() {
+      if (
+        this.menuArr.findIndex(item => item.url == '/index/Usermanage') != -1
+      ) {
+        return 1;
+      }
+    }
+  },
+  created() {
+    api
+      .loadUserPer(store.state.loginUser.id)
+      .then(res => {
+        this.menuArr = res.data.filter(item => item.type == 'menu');
+      })
+      .catch(() => {
+        console.log('请求失败！');
+      });
+  }
+};
+</script>
+
 <style scoped>
 button {
   margin-right: 10px;
@@ -119,25 +167,3 @@ button {
   margin-right: 20px;
 }
 </style>
-
-<script>
-export default {
-  name: 'layout',
-  data() {
-    return {
-      isCollapsed: false
-    };
-  },
-  computed: {
-    menuitemClasses: function() {
-      return ['menu-item', this.isCollapsed ? 'collapsed-menu' : ''];
-    }
-  },
-  methods: {
-    logOut() {
-      sessionStorage.clear();
-      location.reload();
-    }
-  }
-};
-</script>

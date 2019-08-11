@@ -22,8 +22,8 @@
       @on-selection-change="selBack"
     >
       <template slot-scope="{ row, index }" slot="id">
-        <Input v-if="editIndex == index" type="text" v-model="editId" />
-        <span v-else>{{ row.id }}</span>
+        <!-- <Input v-if="editIndex == index" type="text" v-model="editId" /> -->
+        <span>{{ row.id }}</span>
       </template>
       <template slot-scope="{ row, index }" slot="name">
         <Input v-if="editIndex == index" type="text" v-model="editName" />
@@ -90,16 +90,6 @@
     >
       <div class="item">
         <Input
-          v-model="addId"
-          placeholder="填写id号"
-          clearable
-          style="width: 220px"
-        >
-          <span slot="prepend">id：</span>
-        </Input>
-      </div>
-      <div class="item">
-        <Input
           v-model="addName"
           placeholder="填写姓名"
           clearable
@@ -136,6 +126,26 @@
           style="width: 220px"
         >
           <span slot="prepend">邮件：</span>
+        </Input>
+      </div>
+      <div class="item">
+        <Input
+          v-model="addUsername"
+          placeholder="填写账号"
+          clearable
+          style="width: 220px"
+        >
+          <span slot="prepend">账号：</span>
+        </Input>
+      </div>
+      <div class="item">
+        <Input
+          v-model="addPassword"
+          placeholder="填写密码"
+          clearable
+          style="width: 220px"
+        >
+          <span slot="prepend">密码：</span>
         </Input>
       </div>
       <Button type="success" long style="margin-top: 20px" @click="addUser"
@@ -228,7 +238,6 @@ export default {
         }
       ],
       userArr: [],
-      editId: '',
       editName: '',
       editSchool: '',
       editPhone: '',
@@ -242,6 +251,8 @@ export default {
       addSchool: '',
       addPhone: '',
       addMail: '',
+      addUsername: '',
+      addPassword: '',
       searchCont: '',
       pageSize: 3,
       pageNum: 1,
@@ -264,7 +275,6 @@ export default {
   },
   methods: {
     editClick(row, index) {
-      this.editId = row.id;
       this.editName = row.name;
       this.editSchool = row.school;
       this.editPhone = row.phone;
@@ -275,8 +285,8 @@ export default {
     },
     determineSave(row) {
       api
-        .modifyUser('/api/user/' + this.editId, {
-          id: this.editId,
+        .modifyUser(this.editId, {
+          id: row.id,
           name: this.editName,
           school: this.editSchool,
           phone: this.editPhone,
@@ -291,7 +301,6 @@ export default {
           console.log('修改请求发送失败！');
         });
       this.editIndex = -1;
-      row.id = this.editId;
       row.name = this.editName;
       row.school = this.editSchool;
       row.phone = this.editPhone;
@@ -299,7 +308,7 @@ export default {
       row.username = this.editUsername;
       row.password = this.editPassword;
       api
-        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
+        .getUser(this.pageNum, this.pageSize)
         .then(res => {
           this.userArr = res.data;
         })
@@ -310,7 +319,7 @@ export default {
     deleteRow(row, index) {
       this.userArr.splice(index, 1);
       api
-        .deleteUser('/api/user/' + row.id)
+        .deleteUser(row.id)
         .then(res => {
           console.log(res.data);
         })
@@ -326,7 +335,7 @@ export default {
           console.log('返回失败！');
         });
       api
-        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
+        .getUser(this.pageNum, this.pageSize)
         .then(res => {
           this.userArr = res.data;
         })
@@ -336,14 +345,14 @@ export default {
     },
     addUser() {
       api
-        .addUser('/api/user', {
-          id: Number(this.addId),
+        .addUser({
+          id: Date.now(),
           name: this.addName,
           school: this.addSchool,
           phone: this.addPhone,
           mail: this.addMail,
-          username: this.editUsername,
-          password: this.editPassword
+          username: this.addUsername,
+          password: this.addPassword
         })
         .then(res => {
           this.value = false;
@@ -361,7 +370,7 @@ export default {
           console.log('返回失败！');
         });
       api
-        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
+        .getUser(this.pageNum, this.pageSize)
         .then(res => {
           this.userArr = res.data;
         })
@@ -379,7 +388,7 @@ export default {
     },
     searchUser() {
       api
-        .searchUser('/api/user/?q=' + this.searchCont)
+        .searchUser(this.searchCont)
         .then(res => {
           this.userArr = res.data;
           this.userLength = res.data.length;
@@ -391,7 +400,7 @@ export default {
     changePage(val) {
       this.pageNum = val;
       api
-        .getUser(`/api/user?_page=${this.pageNum}&_limit=${this.pageSize}`)
+        .getUser(this.pageNum, this.pageSize)
         .then(res => {
           this.userArr = res.data;
         })
@@ -421,9 +430,7 @@ export default {
       } else {
         this.checkArr = [];
         api
-          .getCurUserPermission(
-            '/per/user_permission?userId=' + this.setAuthorityUser.id
-          )
+          .getCurUserPermission(this.setAuthorityUser.id)
           .then(res => {
             this.userPermission = res.data; //这个是拿的当前添加用户的已有的所有权限
             for (let i = 0; i < res.data.length; i++) {
@@ -460,7 +467,7 @@ export default {
           return;
         } else if (this.defaultCheck == false) {
           api
-            .userAddPermission('/per/user_permission', {
+            .userAddPermission({
               id: Date.now() + b,
               userId: this.setAuthorityUser.id,
               permissionId: ele1.id,
@@ -476,8 +483,7 @@ export default {
         } else if (this.defaultCheck == true) {
           api
             .userDeletePermission(
-              '/per/user_permission/' +
-                this.userPermission[this.userPermissionInd].id
+              this.userPermission[this.userPermissionInd].id
             )
             .then(res => {
               console.log(res.data);
@@ -502,7 +508,7 @@ export default {
       } else {
         this.checkArr2 = [];
         api
-          .getCurUserRole('/per/user_role?userId=' + this.setAuthorityUser.id)
+          .getCurUserRole(this.setAuthorityUser.id)
           .then(res => {
             this.userRole = res.data; //这个是拿的当前添加用户的已有的所有权限
             for (let i = 0; i < res.data.length; i++) {
@@ -538,7 +544,7 @@ export default {
           return;
         } else if (this.defaultCheck == false) {
           api
-            .userAddRole('/per/user_role', {
+            .userAddRole({
               id: Date.now() + a,
               userId: this.setAuthorityUser.id,
               roleId: ele1.id,
@@ -553,9 +559,7 @@ export default {
             });
         } else if (this.defaultCheck == true) {
           api
-            .userDeleteRole(
-              '/per/user_role/' + this.userRole[this.userRoleIndex].id
-            )
+            .userDeleteRole(this.userRole[this.userRoleIndex].id)
             .then(res => {
               console.log(res.data);
             })
@@ -576,7 +580,7 @@ export default {
         console.log('返回失败！');
       });
     api
-      .getUser('/api/user?_page=' + this.pageNum + '&_limit=' + this.pageSize)
+      .getUser(this.pageNum, this.pageSize)
       .then(res => {
         this.userArr = res.data;
       })
