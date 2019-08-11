@@ -13,8 +13,7 @@
     </Input>
     <Table stripe border highlight-row :columns="columns" :data="permissionArr">
       <template slot-scope="{ row, index }" slot="id">
-        <Input v-if="editIndex == index" type="text" v-model="editId" />
-        <span v-else>{{ row.id }}</span>
+        <span>{{ row.id }}</span>
       </template>
       <template slot-scope="{ row, index }" slot="pid">
         <Input v-if="editIndex == index" type="text" v-model="editPid" />
@@ -37,8 +36,7 @@
         <span v-else>{{ row.del }}</span>
       </template>
       <template slot-scope="{ row, index }" slot="subon">
-        <Input v-if="editIndex == index" type="text" v-model="editSubon" />
-        <span v-else>{{ row.subon }}</span>
+        <span>{{ row.subon }}</span>
       </template>
       <template slot-scope="{ row, index }" slot="subby">
         <Input v-if="editIndex == index" type="text" v-model="editSubby" />
@@ -95,16 +93,6 @@
     >
       <div class="item">
         <Input
-          v-model="addId"
-          placeholder="填写id号"
-          clearable
-          style="width: 220px"
-        >
-          <span slot="prepend">id：</span>
-        </Input>
-      </div>
-      <div class="item">
-        <Input
           v-model="addPid"
           placeholder="填写pid号"
           clearable
@@ -114,14 +102,23 @@
         </Input>
       </div>
       <div class="item">
-        <Input
+        <!-- <Input
           v-model="addType"
           placeholder="填写种类"
           clearable
           style="width: 220px"
         >
           <span slot="prepend">种类：</span>
-        </Input>
+        </Input> -->
+        type:
+        <Select style="width:180px" v-model="addType">
+          <Option
+            v-for="item in typeSel"
+            :value="item.value"
+            :key="item.value"
+            >{{ item.value }}</Option
+          >
+        </Select>
       </div>
       <div class="item">
         <Input
@@ -144,24 +141,23 @@
         </Input>
       </div>
       <div class="item">
-        <Input
+        <!-- <Input
           v-model="addDel"
           placeholder="填写Del"
           clearable
           style="width: 220px"
         >
           <span slot="prepend">Del：</span>
-        </Input>
-      </div>
-      <div class="item">
-        <Input
-          v-model="addSubon"
-          placeholder="填写Subon"
-          clearable
-          style="width: 220px"
-        >
-          <span slot="prepend">Subon：</span>
-        </Input>
+        </Input> -->
+        Del:
+        <Select style="width:180px" v-model="addDel">
+          <Option
+            v-for="item in delSel"
+            :value="item.value"
+            :key="item.value"
+            >{{ item.value }}</Option
+          >
+        </Select>
       </div>
       <div class="item">
         <Input
@@ -273,24 +269,22 @@ export default {
         }
       ],
       permissionArr: [],
-      editId: '',
+      typeSel: [{ value: 'menu' }, { value: 'route' }],
+      delSel: [{ value: 0 }, { value: 1 }],
       editPid: '',
       editType: '',
       editDes: '',
       editStatus: '',
       editDel: '',
-      editSubon: '',
       editSubby: '',
       editCode: '',
       editUrl: '',
       editIndex: -1,
-      addId: '',
       addPid: '',
       addType: '',
       addDes: '',
       addStatus: '',
       addDel: '',
-      addSubon: '',
       addSubby: '',
       addCode: '',
       addUrl: '',
@@ -332,6 +326,8 @@ export default {
         });
     },
     addPermission() {
+      this.addType = '';
+      this.addSubon = '';
       axios({
         method: 'post',
         url: '/per/permission',
@@ -339,13 +335,13 @@ export default {
           Authorization: 'aa'
         },
         data: {
-          id: Number(this.addId),
+          id: Date.now(),
           pid: this.addPid,
           type: this.addType,
           des: this.addDes,
           status: this.addStatus,
           del: this.addDel,
-          subon: this.addSubon,
+          subon: new Date(),
           subby: this.addSubby,
           code: this.addCode,
           url: this.addUrl

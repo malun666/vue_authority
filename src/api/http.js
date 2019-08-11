@@ -4,45 +4,48 @@ axios.defaults.headers.common['Authorization'] = 'AUTH_TOKEN';
 
 export default {
   getLength() {
-    return axios('/api/user');
+    return axios.get('/api/user');
   },
-  getUser(url) {
-    return axios(url);
+  getUser(num, size) {
+    return axios.get(`/api/user?_page=${num}&_limit=${size}`);
   },
-  modifyUser(url, data) {
-    return axios.put(url, data);
+  modifyUser(id, data) {
+    return axios.put(`/api/user/${id}`, data);
   },
-  deleteUser(url) {
-    return axios.delete(url);
+  deleteUser(id) {
+    return axios.delete(`/api/user/${id}`);
   },
-  addUser(url, data) {
-    return axios.put(url, data);
+  addUser(data) {
+    return axios.post('/api/user', data);
   },
-  searchUser(url) {
-    return axios(url);
+  searchUser(txt) {
+    return axios(`/api/user/?q=${txt}`);
   },
   getAllauthority() {
     return axios('/per/permission');
   },
-  getCurUserPermission(url) {
-    return axios(url);
+  getCurUserPermission(id) {
+    return axios(`/per/user_permission?userId=${id}`);
   },
-  userAddPermission(url, data) {
-    return axios.post(url, data);
+  userAddPermission(data) {
+    return axios.post('/per/user_permission', data);
   },
-  userDeletePermission(url) {
-    return axios.delete(url);
+  userDeletePermission(id) {
+    return axios.delete(`/per/user_permission/${id}`);
   },
   getAllRole() {
     return axios('per/role');
   },
-  getCurUserRole(url) {
-    return axios(url);
+  getCurUserRole(id) {
+    return axios(`/per/user_role?userId=${id}`);
   },
-  userAddRole(url, data) {
-    return axios.post(url, data);
+  userAddRole(data) {
+    return axios.post('/per/user_role', data);
   },
-  userDeleteRole(url) {
-    return axios.delete(url);
+  userDeleteRole(id) {
+    return axios.delete(`/per/user_role/${id}`);
+  },
+  loadUserPer(id) {
+    return axios.get(`/per/getUserPer/${id}`);
   }
 };

@@ -7,6 +7,9 @@ import Index from './views/lndex.vue';
 import Usermanage from './views/manage/Usermanage.vue';
 import Rolemanage from './views/manage/Rolemanage.vue';
 import Authoritymanage from './views/manage/Authoritymanage.vue';
+import Test1 from './views/test/Testpage1.vue';
+import Test2 from './views/test/Testpage2.vue';
+import Test3 from './views/test/Testpage3.vue';
 
 Vue.use(Router);
 
@@ -42,6 +45,27 @@ export default new Router({
         {
           path: 'Authoritymanage',
           component: Authoritymanage
+        },
+        {
+          path: 'Test1',
+          component: Test1,
+          meta: {
+            perId: 2002
+          }
+        },
+        {
+          path: 'Test2',
+          component: Test2,
+          meta: {
+            perId: 2003
+          }
+        },
+        {
+          path: 'Test3',
+          component: Test3,
+          meta: {
+            perId: 2004
+          }
         }
       ]
     },
